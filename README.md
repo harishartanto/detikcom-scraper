@@ -1,6 +1,6 @@
 # Detikcom Scraper
 
-Detikcom Scraper is a command-line interface (CLI) program written in Python for scraping news content from the Detikcom news portal. It provides a convenient way to access and analyze the latest news articles from Detikcom, one of Indonesia's prominent online news portals. Sample data scraped using Detikcom Scraper can be found in the [data](data) directory.
+Detikcom Scraper is a command-line interface (CLI) program written in Python for scraping news content from the Detikcom news portal. It provides a convenient way to access and analyze the latest news articles from Detikcom, one of Indonesia's prominent online news portals. Sample data scraped using this program can be found in the [data](data) directory.
 
 ## Features
 
