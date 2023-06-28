@@ -61,8 +61,6 @@ The program's developer has no official affiliation with Detikcom, and it is dev
 
 The developer is not responsible for any misuse or improper use of the program. Users are fully responsible for their use of the program and must comply with applicable laws and respect Detikcom's copyright and privacy policies.
 
-The program is not intended to cause harm or disrupt the performance of Detikcom website. However, since web scraping involves automated data extraction from a website, Detikcom Scraper may impose additional load on the Detikcom server. The program should be used wisely and in compliance with any limitations set by Detikcom.
-
 Detikcom and all related trademarks remain the property of Detikcom.
 
 The use of this program in any way is solely the user's responsibility, and the developer is not liable for any legal consequences or damages arising from the use of this program.
