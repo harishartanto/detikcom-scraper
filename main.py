@@ -189,7 +189,7 @@ def save_to_file(topic, date_start, date_end, cat_choice, is_avertorial, is_cont
     os.system('cls')
 
     if choice == '1':
-        df_articles.to_csv(f'{data_directory}/{topic}_{articles_num}_{date_start}_{date_end}_{news_cat}_{is_avertorial}_{is_content}_ds-{current_time}', index=False)
+        df_articles.to_csv(f'{data_directory}/{topic}_{articles_num}_{date_start}_{date_end}_{news_cat}_{is_avertorial}_{is_content}_ds-{current_time}.csv', index=False)
         print('[Hasil scraping telah disimpan menjadi file CSV.]')
         time.sleep(2)
         os.system('cls')
