@@ -27,6 +27,8 @@ def is_valid_period(start_date, end_date):
     elif s_day != e_day:
         if e_day > s_day:
             return True
+    elif s_day == e_day and s_month == e_month and s_year == e_year:
+        return True
 
 def in_date_start():
     s_date = input("Tanggal awal  (dd/mm/yyyy): ")
@@ -76,30 +78,51 @@ def in_date_end(date_start):
     return e_date
 
 def detikcom_url(query, category_id, date_start, date_end, pages_num=1):
-    url = f"https://www.detik.com/search/searchall?query={query}&siteid={category_id}&sortby=time&fromdatex={date_start}&todatex={date_end}&page={pages_num}"
+    url = f"https://www.detik.com/search/searchnews?query={query}&siteid={category_id}&sortby=time&fromdatex={date_start}&todatex={date_end}&page={pages_num}&result_type=latest"
     response = requests.get(url)
     page = bs(response.content, "html.parser")
 
     return page
 
+def last_page_article_count(query, category_id, date_start, date_end, page_num):
+    last_page = detikcom_url(query, category_id, date_start, date_end, page_num)
+    article_list = last_page.find("div", {"class": "list-content"})
+    
+    if article_list:
+        articles = article_list.find_all('article', class_='list-content__item')
+        
+    article_count = len(articles)
+
+    return article_count
+
+
 def detikcom_search_results(query, category_id, date_start, date_end):
     page = detikcom_url(query, category_id, date_start, date_end)
 
-    results = page.find("div", {"class": "search-result"})
-    results_num = results.find("span", {"class": "fl text"}).get_text()
-    num = int(re.findall(r'\d+', results_num)[0])
+    pagination = page.find("div", {"class": "pagination"})
+    if pagination:
+        page_numbers = pagination.find_all('a', class_='pagination__item')
+        if page_numbers:
+            last_page_number = int(page_numbers[-2].text)
+        
+        last_page_articles = last_page_article_count(query, category_id, date_start, date_end, last_page_number)
+
+        num = (last_page_number - 1) * 10 + last_page_articles 
+    else: 
+        num = 0
+        last_page_number = 1
 
     if num == 0:
         print(f'Tidak ditemukan artikel mengenai "{query}".')
-        return num
+        return num, last_page_number
     elif num > 9:
-        print(f"Jumlah artikel yang ditemukan: {num-1}")
-        return num-1
+        print(f"Jumlah artikel yang ditemukan: {num}")
+        return num, last_page_number
     else:
         print(f"Jumlah artikel yang ditemukan: {num}")
-        return num
+        return num, last_page_number
 
-def detikcom_article_need(num_result):
+def detikcom_article_need(num_result, last_page):
     try:
         number_need = int(input("Masukkan jumlah artikel yang ingin diekstrak: "))
     except ValueError:
@@ -113,7 +136,7 @@ def detikcom_article_need(num_result):
         print("Permintaan melebihi hasil pencarian. Mohon kurangi jumlah permintaan.")
         number_need, pages = detikcom_article_need(num_result)
     else:
-        pages = math.ceil(number_need / 9)
+        pages = last_page
 
     return number_need, pages
 
@@ -169,25 +192,25 @@ def detikcom_advertorial_check(article_url):
         return False
 
 def detikcom_articles(query, category_id, from_date, to_date, ads_article, article_content):
-    results_num = detikcom_search_results(query, category_id, from_date, to_date)
+    results_num, last_page = detikcom_search_results(query, category_id, from_date, to_date)
     article_lists = []
 
     if results_num == 0:
         article_lists = []
         data = pd.DataFrame(article_lists, columns=["title", "category", "publish_date", "article_url", "content"])
     else:
-        number_need, pages = detikcom_article_need(results_num)
+        number_need, pages = detikcom_article_need(results_num, last_page)
         print(f"Mengekstrak {number_need} artikel ...")
 
         for i in range(1, pages+1):
             page = detikcom_url(query, category_id, from_date, to_date, i)
-            articles = page.find_all("article")
+            articles = page.find_all("article", class_="list-content__item")
 
             for article in articles:
-                title = article.find("h2", {"class": "title"}).get_text()
-                category = article.find("span", {"class": "category"}).get_text()
-                publish_date = article.find("span", {"class": "date"}).get_text().split(",")[1]
-                article_url = article.find("a")["href"]
+                title = article.find("a", {"class": "media__link"}).get('dtr-ttl')
+                category = article.find('h2', class_='media__subtitle').text.strip()
+                publish_date = article.find('span', title=True).get('title')
+                article_url = article.find("a", {"class": "media__link"}).get('href')
 
                 if ads_article and detikcom_advertorial_check(article_url):
                     continue
